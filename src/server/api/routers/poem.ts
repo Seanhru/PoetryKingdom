@@ -8,12 +8,13 @@ import {
 
 export const poemRouter = createTRPCRouter({
 	create: protectedProcedure
-		.input(z.object({ name: z.string().min(1), content: z.string() }))
+		.input(z.object({ name: z.string().min(1), content: z.string(), tags: z.array(z.string()) }))
 		.mutation(async ({ ctx, input }) => {
 			return ctx.db.poem.create({
 				data: {
 					name: input.name,
 					content: input.content,
+					tags: input.tags, 
 					createdBy: { connect: { id: ctx.session.user.id } },
 				},
 			});
@@ -37,9 +38,9 @@ export const poemRouter = createTRPCRouter({
 				},
 			});
 		}),
-	deletePost: protectedProcedure
+	updatePost: protectedProcedure
 		.input(z.object({ postId: z.string(), content: z.string() }))
-		.query(async ({ ctx, input }) => {
+		.mutation(async ({ ctx, input }) => {
 			return ctx.db.poem.update({
 				where: {
 					id: input.postId,
@@ -50,4 +51,13 @@ export const poemRouter = createTRPCRouter({
 				},
 			});
 		}),
+	deletePostById: protectedProcedure
+		.input(z.object({ postId: z.string()}))
+		.mutation(async ({ ctx, input }) => {
+			return ctx.db.poem.delete({ 
+				where: {
+					id: input.postId
+				}
+			})
+		})
 });
